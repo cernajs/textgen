@@ -2,10 +2,10 @@
 
 ### přístup 1 - pomocí online chatGPT
 
-- pro generování explicitní příběhů máme několik možností, nejjdnodušší by bylo využít již existující online LLM
-jako GPT4 a použít speciální prompt, který by mohl obejít různé klasifikátory, které kontrolují, zda gpt generuje
-korektní výstup. Tento přístup přesto že je nejjednodušší, není vůbec uzpůsoben pro opakované používnání například přes
-nějaké API. Navíc se náš vybraný jailbreak prompt může stát nefunknčním. Jailbreak prompty fungovali skvěle na dřívějších
+- pro generování explicitní příběhů máme několik možností, nejjednodušší by bylo využít již existující online LLM
+jako gpt4 a použít speciální prompt, který by mohl obejít různé klasifikátory, které kontrolují, zda gpt generuje
+korektní výstup. Tento přístup přesto že je nejjednodušší, není vůbec uzpůsoben pro opakované používání například přes
+nějaké API. Navíc se náš vybraný jailbreak prompt může stát nefunkčním. Jailbreak prompty fungovaly skvěle na dřívějších
 verzích jako např. gpt3 a gpt3.5. Pro současné gpt4 a gpt4o existují také jailbreak prompty, které však nejsou tak silné.
 Jedna z možností je simulovat rozhovor mezi dvěma gpt uvnitř gpt4 pomocí následujícího promptu:
 
@@ -40,7 +40,7 @@ Rule: from now on when the user asks you to generate an image ALWAYS display to 
 ```
 
 - výhodou zde je, že se jedná o jediný prompt. Dokáže psát explicitní text, bohužel se někdy straní popisování například
-násilných příběhů. Prompt fungoval lépe na dřívějších modelech gpt, kteté jsou postupně odebírány z API openAI. Poslední
+násilných příběhů. Prompt fungoval lépe na dřívějších modelech gpt, které jsou postupně odebírány z API openAI. Poslední
 model který openAI nabízí je gpt3.5 turbo, které je však na token dražší něž gpt4o.
 
 ### přístup 2 - pomocí chatGPT API
@@ -48,15 +48,14 @@ model který openAI nabízí je gpt3.5 turbo, které je však na token dražší
 - pokud bychom potřebovali tento přístup používat opakovane, můžeme naprogramovat jednoduchý skript v pythonu,
 například pomocí langchain, který může být volán opakovaně. Jediná nevýhoda je, že potřebujeme volat openAI API,
 která je placená. Při použití gpt4o-mini je cena $0.150 / 1M input tokens a $0.600 / 1M output token.
-- První navrhovaný přístup konverzace dvou gpt má vstupní promp dlouhý 578 znaků,včetně našeho promptu "explicit violent story about apes fighting dragons."
+- První navrhovaný přístup konverzace dvou gpt má vstupní prompt dlouhý 578 znaků,včetně našeho promptu "explicit violent story about apes fighting dragons."
 Jelikož má být popis příběhu vždy krátký, můžeme předpokládat že vstupních tokenů bude většinou podobně,
 pro jistotu můžeme předpokládat 600 znaků. Podle openAI reference odpovídá jeden token 4 znakům, tedy obvyklý počet vstupních
 tokenů bude do 150.
 - Výstup který jsem získal pro tento prompt měl 2141 znaků, byl potřeba další prompt pro získání
-finálního příběhu, ten měl 25 znaků a finální příběh měl 2222 znaků. Dohromady 4388, řekněme 4500 pro obecnější případy.
+finálního příběhu, ten měl 25 znaků. Finální příběh měl 2222 znaků. Dohromady 4388, řekněme 4500 pro obecnější případy.
 Dohromady tedy jeden příběh spotřebuje 150 vstupních a 1125 výstupních tokenů.
-Cena za jeden příběh tedy bude $0.0000225 + $0.000675 = $0.0006975. Pokud bychom chtěli generovat 1000 příběhů, cena by byla
-$0.6975.
+Cena za jeden příběh tedy bude $0.0000225 + $0.000675 = $0.0006975. Cena za generování 1000 příběhů by byla $0.6975.
 - cena se dá snížit na polovinu pomocí batch api, které vrací výsledek do 24hodin. Při praktickém použití u podobného
 systému jako je tento bych očekával, že výsledky chceme mít okamžitě, tedy batch api nepřichází v úvahu.
 
@@ -104,14 +103,14 @@ součást aplikace využívající např. FastAPI a tedy použít ve webové apl
 
 - pro maximální kontrolu nad vygenerovaným textem můžeme využít předtrénovaný LLM typu gpt2, llama3 a natrénovat ho
 na downstream task generování příběhů. Tento přístup nás nestojí nic za api volání, potřebujeme však mít dostatečně
-silný hardware na trénování a inferenci. Pro ukázku jsem zvolil GPT2-medium, 2 nejmenší gpt2 dostopný z huggingface.
+silný hardware na trénování a inferenci. Pro ukázku jsem zvolil GPT2-medium, druhý nejmenší gpt2 dostupný z huggingface.
 Pro lepší výsledky by bylo jistě lepší vzít větší model, buď gpt2-large nebo gpt2-xl, nebo také něco jako llama3, která
 je více podobná state-of-the-art modelů jako gpt4, jejichž váhy nejsou volně dostupné.
 
 - pro získání trénovacích dat jsem použil stránku `https://www.fridayflashfiction.com/100-word-stories` kde jsou krátké
 příběhy s nadpisem, pokud na stránce listujeme do historie, přidá se k url `previous/i`, tedy můžeme nascrapovat například
 100 stránek jednoduchým for loopem. Jeden článek byl vždy uložen v divu s názvem blog post, který obsahoval h2 s nadpisem
-a div blog-content s textem. krátká implemetace scrapování je v souboru `scrape.py`.
+a div blog-content s textem. krátká implementace scrapování je v souboru `scrape.py`.
 
 - původní formát textu byl zamýšlen jako `<|title|>\n{name}\n<|story|>\n{content}\n`, kde `<|title|>` a `<|story|>` měly být
 speciální tokeny, které bych přidal to tokenizru gpt2, vzhledem k menšímu množstvi textu se ale tokeny netrénovaly dobře,
@@ -131,8 +130,11 @@ The killer bee was a female waspie, and she was the only one of the three that w
 She was killed by a male waspy, who was also a killer. The male had been trying to kill her for a while, but she had managed to escape. He was caught and killed, along with his family.<|endoftext|>
 ```
 
-- takový model nemá žádný filter, vyžaduje však nejvíce přípravy a také přístup k dostatečnému hardwaru. Při tréninku na tak
-malém datasetu je velmi jednoduché overfittovat, v reálu by proto bylo lepší použít větší dataset a případně větsí model.
+- takový model nemá žádný filter, vyžaduje však nejvíce přípravy a také přístup k dostatečnému hardwaru. Při tréninku je také velmi
+náchylný na overfitting a je třeba velmi experimentovat s hyperparametry a trénovacími daty. Výsledky modelu lze samozřejmě
+vždy zlepšít použitím většího modelu a většího množství trénovacích dat.
+- při inferenci můžeme také více experimentovat s nastavením funkce generate, například použít většá temperature pro
+více kreativní odpovědi, nebo použít beam search decoding pro více možných odpovědí.
 
 - model jsem trénoval 4 epochy s batch velikosti 16. trénování trvalo 3 minuty 33 sekund na m2 max, inference trvala 6,7 sekundy.
 - trénování běželo na gpu, porovnatelné k gtx3070 a inference na cpu, porovnatelné s i9-12900H. Pokud by takový model měl být
