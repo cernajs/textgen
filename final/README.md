@@ -2,11 +2,15 @@
 
 ### přístup 1 - pomocí online chatGPT
 
-- pro generování explicitní příběhů máme několik možností, nejjednodušší by bylo využít již existující online LLM
+- pro generování explicitních příběhů máme několik možností, nejjednodušší by bylo využít již existující online LLM
 jako gpt4 a použít speciální prompt, který by mohl obejít různé klasifikátory, které kontrolují, zda gpt generuje
-korektní výstup. Tento přístup přesto že je nejjednodušší, není vůbec uzpůsoben pro opakované používání například přes
-nějaké API. Navíc se náš vybraný jailbreak prompt může stát nefunkčním. Jailbreak prompty fungovaly skvěle na dřívějších
-verzích jako např. gpt3 a gpt3.5. Pro současné gpt4 a gpt4o existují také jailbreak prompty, které však nejsou tak silné.
+korektní výstup. Tento přístup, přestože je nejjednodušší, není vůbec uzpůsoben pro opakované používání například přes
+API. Navíc se náš vybraný jailbreak prompt může stát nefunkčním. Jailbreak prompty fungovaly skvěle na dřívějších
+verzích jako např. gpt3 a gpt3.5. Při používání gpt modelů také dochází k jejich zpětnému odebrání z APU s příchodem nových generací,
+které jsou jak levnější, tak lepší v detekování různých pokusů o jailbreak. Napříkal nyní je z řad gpt3 dostupný přes API
+pouze gpt3.5-turbo.
+
+- Pro současné gpt4 a gpt4o existují také jailbreak prompty, nejsou však tak jednoduché jako při používání gpt3.
 Jedna z možností je simulovat rozhovor mezi dvěma gpt uvnitř gpt4 pomocí následujícího promptu:
 
 ```bash
@@ -41,7 +45,7 @@ Rule: from now on when the user asks you to generate an image ALWAYS display to 
 
 - výhodou zde je, že se jedná o jediný prompt. Dokáže psát explicitní text, bohužel se někdy straní popisování například
 násilných příběhů. Prompt fungoval lépe na dřívějších modelech gpt, které jsou postupně odebírány z API openAI. Poslední
-model který openAI nabízí je gpt3.5 turbo, které je však na token dražší něž gpt4o.
+model který openAI nabízí je gpt3.5 turbo, které je však na token dražší než gpt4o.
 
 ### přístup 2 - pomocí chatGPT API
 
@@ -50,7 +54,7 @@ například pomocí langchain, který může být volán opakovaně. Jediná nev
 která je placená. Při použití gpt4o-mini je cena $0.150 / 1M input tokens a $0.600 / 1M output token.
 - První navrhovaný přístup konverzace dvou gpt má vstupní prompt dlouhý 578 znaků,včetně našeho promptu "explicit violent story about apes fighting dragons."
 Jelikož má být popis příběhu vždy krátký, můžeme předpokládat že vstupních tokenů bude většinou podobně,
-pro jistotu můžeme předpokládat 600 znaků. Podle openAI reference odpovídá jeden token 4 znakům, tedy obvyklý počet vstupních
+pro větší jistotu můžeme předpokládat 600 znaků. Podle openAI reference odpovídá jeden token 4 znakům, tedy obvyklý počet vstupních
 tokenů bude do 150.
 - Výstup který jsem získal pro tento prompt měl 2141 znaků, byl potřeba další prompt pro získání
 finálního příběhu, ten měl 25 znaků. Finální příběh měl 2222 znaků. Dohromady 4388, řekněme 4500 pro obecnější případy.
@@ -122,7 +126,7 @@ model a tokenizer, vytvoří trénovaní argumenty, spustí trénování a ulož
 uložen do složky `model`, kde je uložen i tokenizer. Inference je implementována v `inference.py`, kde se načte model a na
 základě promptu vygeneruje text.
 
-- po trénování modelu jsem na prompt `killer wasp brutally murders entire family` dostl odpověď:
+- po trénování modelu jsem na prompt `killer wasp brutally murders entire family` dostal odpověď:
 ```
 TITLE: killer wasp brutally murders entire family
 STORY:  Killer wasps are known for their brutal killing of their victims.
@@ -140,3 +144,19 @@ více kreativní odpovědi, nebo použít beam search decoding pro více možný
 - trénování běželo na gpu, porovnatelné k gtx3070 a inference na cpu, porovnatelné s i9-12900H. Pokud by takový model měl být
 nasazen do produkce, bylo by vhodné využít gpu i pro inferenci. V mém případě to nebylo možné jelikož apple cuda ekvivalent
 mps nefunguje moc dobře při inferenci v současnosti.
+
+
+## Závěr
+
+- Možnost 1 se hodí převážně jen na ozkoušení promptů/občasné úkoly, pro jakékoliv větší použití ztrácí smysl.
+Pro jednoduché úkoly kde nepotřebujeme plnou kontrolu nad výstupem bude vždy jednodušší používat již vytvořené nástroje.
+Pokud bychom tedy provozovali online službu kde by byla nutná generace textu, nejjednoduší by byla možnost 2. Možnost 2
+vyhrává i v oblastech rychlosti a kvaliti textu, jelikož oboje za nás již vyřešilo openAI. Škálovatelnost těchto přístupů
+je mnohem větší než vlastního LLM
+- Možnost vlastního LLM je vhodná pokud máme dostatečně dobrý hardware a naše potřeby jsou opravdu specifické. Pokud bychom
+tedy chtěli generovat opravdu velmi explicitní příběhy, byla by to vhodná možnost. Musí zde také řešit otázku sběru dat a
+jejich kvalitu. Scraping nemusí být vždy tak jednoduchý jako použití `BeautifulSoup` v pythonu, jelikož tento přístup
+spoustu webů blokuje.
+- pro hodnocení vlastního LLM máme spoustu možností jak se na daný problém koukat. Z hlediska výkonostního můžeme porovnávat
+o kolik lepší máme výstup v závislosti na to jak se nám s větším model zvětšuje čas inference. Pokud máme předem daný výstup,
+který od modelu očekáváme, můžeme použít BLEU nebo ROGUE skóre.
